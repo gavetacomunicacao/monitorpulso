@@ -715,6 +715,7 @@ tbody td{padding:8px 11px;vertical-align:middle}
         <option value="Em produção">🎬 Em produção</option>
         <option value="Planejado">📋 Planejado</option>
         <option value="Atrasado">⚠️ Atrasado</option>
+        <option value="Remanejado">🔄 Remanejado</option>
         <option value="Cancelado">❌ Cancelado</option>
       </select>
       <select id="planFiltroTemp" onchange="renderPlanejamento()" style="font-size:12px">
@@ -1250,6 +1251,7 @@ function parsePlanWorkbook(wb, filename){
     if(l === 'caiu' || l.includes('cancel')) return 'Cancelado';
     if(l === 'a ser feito' || l === 'não feito' || l === 'pendente') return 'Planejado';
     if(l.includes('atras')) return 'Atrasado';
+    if(l.includes('remanej')) return 'Remanejado';
     // Everything else (com a edição, revisão, aprovação, gravação, etc.) = Em produção
     return 'Em produção';
   };
@@ -1330,6 +1332,7 @@ function renderPlanejamento(){
   const prod = all.filter(t=>t.status==='Em produção').length;
   const pla = all.filter(t=>t.status==='Planejado').length;
   const atr = all.filter(t=>t.status==='Atrasado').length;
+  const rem = all.filter(t=>t.status==='Remanejado').length;
   const can = all.filter(t=>t.status==='Cancelado').length;
   const mornoPlan = all.filter(t=>t.temp==='Morno').length;
   const mornoPub  = all.filter(t=>t.temp==='Morno'&&(t.status==='Publicado'||t.status==='Em produção')).length;
@@ -1345,7 +1348,7 @@ function renderPlanejamento(){
     <div class="kpi"><div class="kpi-lbl">Taxa de execução</div><div class="kpi-val" style="color:${taxaExec>=80?'#15803d':taxaExec>=50?'#b45309':'#b91c1c'}">${taxaExec}%</div><div class="kpi-sub">(mornos + quentes) ÷ planejados</div></div>
   `;
 
-  mkChart('cPlanStatus',{type:'doughnut',data:{labels:['Publicado','Em produção','Planejado','Atrasado','Cancelado'],datasets:[{data:[pub,prod,pla,atr,can],backgroundColor:['#15803d','#7c3aed','#2563eb','#b45309','#b91c1c'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:{boxWidth:8,font:{size:10},padding:6}}}}});
+  mkChart('cPlanStatus',{type:'doughnut',data:{labels:['Publicado','Em produção','Planejado','Atrasado','Remanejado','Cancelado'],datasets:[{data:[pub,prod,pla,atr,rem,can],backgroundColor:['#15803d','#7c3aed','#2563eb','#b45309','#0891b2','#b91c1c'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'right',labels:{boxWidth:8,font:{size:10},padding:6}}}}});
 
   // Mornos vs Quentes por cliente
   const clientes=[...new Set(all.map(t=>t.cliente))].sort();
@@ -1399,9 +1402,9 @@ function renderPlanejamento(){
 
 
   // Table
-  const SCOL2={Publicado:'#15803d','Em produção':'#7c3aed',Planejado:'#2563eb',Atrasado:'#b45309',Cancelado:'#b91c1c'};
-  const SBCOL2={Publicado:'#dcfce7','Em produção':'#f3f0ff',Planejado:'#dbeafe',Atrasado:'#fef3c7',Cancelado:'#fee2e2'};
-  const SICON2={Publicado:'✅','Em produção':'🎬',Planejado:'📋',Atrasado:'⚠️',Cancelado:'❌'};
+  const SCOL2={Publicado:'#15803d','Em produção':'#7c3aed',Planejado:'#2563eb',Atrasado:'#b45309',Remanejado:'#0891b2',Cancelado:'#b91c1c'};
+  const SBCOL2={Publicado:'#dcfce7','Em produção':'#f3f0ff',Planejado:'#dbeafe',Atrasado:'#fef3c7',Remanejado:'#cffafe',Cancelado:'#fee2e2'};
+  const SICON2={Publicado:'✅','Em produção':'🎬',Planejado:'📋',Atrasado:'⚠️',Remanejado:'🔄',Cancelado:'❌'};
   document.getElementById('planTbody').innerHTML=tasks.length?tasks.map(t=>`<tr>
     <td style="font-family:'DM Mono',monospace;font-size:11px;white-space:nowrap">${t.data}</td>
     <td style="font-size:11px;color:var(--t3);white-space:nowrap">${t.dia}</td>
